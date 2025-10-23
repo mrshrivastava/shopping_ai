@@ -10,9 +10,9 @@ import fs from "fs";
 import path from "path";
 import { computeClipEmbedding } from "../services/clipEmbedding.js";
 
-const APIFY_URL = process.env.APIFY_PINTEREST_DATASET_URL;
+const APIFY_URL_LIST = [process.env.APIFY_PINTEREST_DATASET_URL, process.env.APIFY_INSTAGRAM_DATASET_URL];
 
-async function fetchDataset() {
+async function fetchDataset(APIFY_URL) {
   const resp = await axios.get(APIFY_URL, { timeout: 60000 });
   return resp.data; // array of records
 }
@@ -36,9 +36,9 @@ function extractPostFields(record) {
 }
 
 export async function runIngest() {
-  console.log("Fetching dataset from Apify...");
-  const items = await fetchDataset();
-  console.log("Records fetched:", items.length);
+  
+  for(const APIFY_URL of APIFY_URL_LIST){
+  const items = await fetchDataset(APIFY_URL);
   var count=0;
   for (const rec of items) {
     try {
@@ -88,13 +88,14 @@ export async function runIngest() {
         }
       }
 
-      console.log(`Post ${postId} saved with ${preds.length} detections`);
+      // console.log(`Post ${postId} saved with ${preds.length} detections`);
     } catch (err) {
       console.error("Record ingest failed:", err);
     }
   }
 
-  console.log(`Ingest complete. total skipped = "${count}"`);
+  // console.log(`Ingest complete. total skipped = "${count}"`);
+  }
 }
 
 // if run directly

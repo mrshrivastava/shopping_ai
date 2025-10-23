@@ -2,6 +2,8 @@
 import React, { useState } from 'react'
 import Link from 'next/link';
 
+const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
+
 export default function SearchPage() {
   const [query, setQuery] = useState('')
   const [imageFile, setImageFile] = useState(null)
@@ -17,7 +19,7 @@ export default function SearchPage() {
       if (imageFile) {
         const formData = new FormData()
         formData.append('image', imageFile)
-        response = await fetch('http://localhost:5000/search', {
+        response = await fetch(`${baseURL}/search`, {
           method: 'POST',
           body: formData,
         });
@@ -25,7 +27,7 @@ export default function SearchPage() {
         setResults(data.matches || data.results?.matches || []);
       } else if (query.trim()) {
         response = await fetch(
-          `http://localhost:5000/search?query=${encodeURIComponent(query)}`
+          `${baseURL}/search?query=${encodeURIComponent(query)}`
         );
         const data = await response.json();
         setResults(data.results || []);

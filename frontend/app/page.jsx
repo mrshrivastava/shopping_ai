@@ -1,56 +1,10 @@
-// 'use client'
-// import React, { useEffect, useState } from 'react';
-// import API from '../lib/api';
-// import ProductCard from '../components/ProductCard';
-// import LoadingSpinner from '../components/LoadingSpinner';
-
-// export default function HomePage(){
-//   const [posts, setPosts] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [query, setQuery] = useState('');
-
-//   useEffect(()=>{ fetchPosts(); }, []);
-
-//   async function fetchPosts(){
-//     try{
-//       setLoading(true);
-//       const res = await API.get('/posts');
-//       const data = res.data;
-//       console.log('Fetched posts:', data);
-//       const list = Array.isArray(data) ? data : (data.posts || []);
-//       // const filtered = list.filter(p => p.detections && p.detections.length > 0);
-//       setPosts(list);
-//     }catch(e){ console.error(e) }finally{ setLoading(false) }
-//   }
-
-//   const filteredPosts = posts.filter(p => {
-//     if(!query) return true;
-//     const q = query.toLowerCase();
-//     return (p.title||p.caption||'').toLowerCase().includes(q) ||
-//            (p.user_handle||'').toLowerCase().includes(q);
-//   });
-
-//   return (
-//     <div>
-//       <div className="flex items-center justify-between mb-6">
-//         <h2 className="text-2xl font-bold">Discover</h2>
-//       </div>
-
-//       {loading ? <LoadingSpinner /> : (
-//         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-//           {filteredPosts.map(p=> <ProductCard key={p.id} item={p} />)}
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
-
 'use client'
 import React, { useEffect, useState, useRef, useCallback} from 'react';
 import API from '../lib/api';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+
+const baseURL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 export default function ProductGrid() {
   const [posts, setPosts] = useState([])              // all loaded products
@@ -64,7 +18,7 @@ export default function ProductGrid() {
   // Fetch products (paginated)
   const fetchProducts = async (pageNumber = 1) => {
     try {
-      const res = await fetch(`http://localhost:5000/posts?page=${pageNumber}`)
+      const res = await fetch(`${baseURL}/posts?page=${pageNumber}`)
       const data = await res.json()
       if (!data || data.length === 0) {
         setHasMore(false)

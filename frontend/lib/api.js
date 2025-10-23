@@ -1,3 +1,4 @@
 import axios from 'axios';
-const API = axios.create({ baseURL: 'http://localhost:5000', timeout: 10000 });
+const url = process.env.BACKEND_URL || 'http://localhost:5000';
+const API = axios.create({ baseURL: url, timeout: 10000 });
 export default API;

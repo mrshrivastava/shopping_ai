@@ -9,9 +9,8 @@ export async function detectClothesLocal(imagePath) {
   // posts file to Roboflow model endpoint (returns predictions)
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString("base64");
-  const url = `${process.env.ROBOFLOW_MODEL_URL}?api_key=${process.env.ROBOFLOW_API_KEY}`;
-  // const resp = await axios.post(url, form, { headers: form.getHeaders(), timeout: 60000 });
-  const resp = await fetch('https://serverless.roboflow.com/testenv-ws58l/workflows/detect-and-classify-4', {
+  const url = process.env.ROBOFLOW_MODEL_URL;
+  const resp = await fetch(url, {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'
@@ -28,7 +27,6 @@ export async function detectClothesLocal(imagePath) {
 });
 
 const result = await resp.json();
-console.log("result is "+result?.outputs?.predictions?.predictions.length);
 
   // Roboflow returns predictions array with x,y,width,height (in pixels) and class/confidence
   const predictions =
