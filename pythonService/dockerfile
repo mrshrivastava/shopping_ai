@@ -1,0 +1,18 @@
+# 1️⃣ Use a lightweight Python base image
+FROM python:3.11-slim
+
+# 2️⃣ Set working directory inside the container
+WORKDIR /app
+
+# 3️⃣ Copy dependency list first and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 4️⃣ Copy the rest of your app
+COPY . .
+
+# 5️⃣ Expose the port that Uvicorn will serve on (default 8000)
+EXPOSE 8000
+
+# 6️⃣ Start the FastAPI service via Uvicorn
+CMD ["uvicorn", "clip_service:app", "--host", "0.0.0.0", "--port", "8000"]

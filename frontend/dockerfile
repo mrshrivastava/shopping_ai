@@ -1,0 +1,25 @@
+# 🧱 1️⃣ Builder stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# 🚀 2️⃣ Runner stage (production)
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copy build output and necessary files
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/next.config.js ./ 
+
+# ✅ Install only production dependencies (to get `next` runtime)
+RUN npm ci --omit=dev
+
+EXPOSE 3000
+CMD ["npm", "start"]

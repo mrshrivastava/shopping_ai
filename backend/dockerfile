@@ -1,0 +1,16 @@
+# 1️⃣ Base image
+FROM node:20-alpine
+
+# 2️⃣ Set working directory
+WORKDIR /app
+
+# 3️⃣ Copy package files and install deps
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# 4️⃣ Copy source
+COPY . .
+
+# 5️⃣ Expose port & run
+EXPOSE 5000
+CMD ["npm", "start"]
