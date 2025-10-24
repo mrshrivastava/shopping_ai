@@ -20,11 +20,11 @@ export async function computeClipEmbedding(imagePath) {
 
     const json = await res.json();
     
-    try {
-      fs.unlinkSync(imagePath);
-    } catch (deleteErr) {
-      console.warn(`Could not delete file ${imagePath}:`, deleteErr.message);
-    }
+    // try {
+    //   fs.unlinkSync(imagePath);
+    // } catch (deleteErr) {
+    //   console.warn(`Could not delete file ${imagePath}:`, deleteErr.message);
+    // }
 
     return json.embedding;
   } catch (err) {

@@ -62,39 +62,45 @@ export async function runIngest() {
       // run detector
       const preds = await detectClothesLocal(localPath);
       // insert post
-      const insertPost = await query(
-        `INSERT INTO posts (apify_id,image_url,caption,hashtags,tags,likes,comments,posted_at,user_handle,user_name,source_url,local_path)
+      if(preds.length>0)
+      {
+        const insertPost = await query(
+          `INSERT INTO posts (apify_id,image_url,caption,hashtags,tags,likes,comments,posted_at,user_handle,user_name,source_url,local_path)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
-        [
-          p.apify_id, p.image_url, p.caption,
-          p.hashtags, p.tags, p.likes, p.comments,
-          p.posted_at, p.user_handle, p.user_name, p.source_url, localPath
-        ]
-      );
-      const postId = insertPost.rows[0].id;
+          [
+            p.apify_id, p.image_url, p.caption,
+            p.hashtags, p.tags, p.likes, p.comments,
+            p.posted_at, p.user_handle, p.user_name, p.source_url, localPath
+          ]
+        );
+        const postId = insertPost.rows[0].id;
 
-      // save each detection and compute crop + phash
-      for (const pred of preds) {
-        try {
-          const { outPath, phash } = await cropAndComputePhash(localPath, pred, `post${postId}_det`);
-          const clipEmb = await computeClipEmbedding(outPath);
-          await query(
-            `INSERT INTO detections (post_id, type, x, y, width, height, confidence, crop_path, phash, clip_embedding)
+        // save each detection and compute crop + phash
+        for (const pred of preds) {
+          try {
+            const { outPath, phash } = await cropAndComputePhash(localPath, pred, `post${postId}_det`);
+            const clipEmb = await computeClipEmbedding(outPath);
+            await query(
+              `INSERT INTO detections (post_id, type, x, y, width, height, confidence, crop_path, phash, clip_embedding)
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-            [postId, pred.type, pred.x, pred.y, pred.width, pred.height, pred.confidence, outPath, phash, clipEmb]
-          );
-        } catch (err) {
-          console.error("Error processing prediction", err);
+              [postId, pred.type, pred.x, pred.y, pred.width, pred.height, pred.confidence, outPath, phash, clipEmb]
+            );
+          } catch (err) {
+            console.error("Error processing prediction", err);
+          }
         }
-      }
 
-      // console.log(`Post ${postId} saved with ${preds.length} detections`);
+        console.log(`Post ${postId} saved with ${preds.length} detections`);
+      }
+      else {
+        console.log("No detections for post - skipping:");
+      }
     } catch (err) {
       console.error("Record ingest failed:", err);
     }
   }
 
-  // console.log(`Ingest complete. total skipped = "${count}"`);
+  console.log(`Ingest complete. total skipped = "${count}"`);
   }
 }
 

@@ -6,7 +6,14 @@ import { query } from "../db/index.js";
 import { detectClothesLocal } from "../services/detectClothes.js";
 import { cropAndComputePhash } from "../services/cropAndHash.js";
 import { computeClipEmbedding } from "../services/clipEmbedding.js";
+import dayjs from 'dayjs';
 const products = JSON.parse(fs.readFileSync("./seed/products.json","utf8"));
+
+function formatToISO(dateStr) {
+  if (!dateStr) return null;
+  const parsed = dayjs(dateStr, ['DD-MM-YYYY HH:mm', 'YYYY-MM-DD HH:mm:ss'], true);
+  return parsed.isValid() ? parsed.toISOString() : null;
+}
 
 async function run() {
   for (const p of products) {
@@ -21,6 +28,18 @@ async function run() {
         try {
           const { outPath, phash } = await cropAndComputePhash(localPath, pred, `product${p.sku_id}_det`);
           const clipEmb = await computeClipEmbedding(outPath);
+          let created_at = null;
+          let release_date = null;
+          let updated_at = null;
+          if(p.created_at) {
+            created_at = formatToISO(p.created_at);
+          }
+          if(p.release_date) {
+            release_date = formatToISO(p.release_date);
+          }
+          if(p.updated_at) {
+            updated_at = formatToISO(p.updated_at);
+          }
           await query(
             `INSERT INTO products (
               id,
@@ -87,9 +106,9 @@ async function run() {
               p.discount_percentage,
               p.note,
               p.tags,
-              p.release_date,
-              p.created_at,
-              p.updated_at,
+              release_date,
+              created_at,
+              updated_at,
               p.pdp_url,
               localPath,
               phash,
